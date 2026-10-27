@@ -313,16 +313,6 @@ Branches used: `feature/auth-security-admin`, `feature/rooms-preferences-invento
 
 ---
 
-## 🎓 Viva Quick Reference
-
-- **Why raw SQL instead of an ORM?** It shows direct control over transactions, locking, query design and MySQL error codes.
-- **Why InnoDB?** It supports ACID transactions, foreign keys with cascades, and row-level locking. MyISAM supports none of these.
-- **How are double allocations prevented?** Allocation runs in one transaction, and each candidate room is read with `FOR UPDATE`. Unique keys on `allocations.roomId` and `allocations.groupId` back this up at the schema level.
-- **How is the waitlist promoted?** In one transaction: delete the allocation, take the group at position 1, allocate the room, remove it from the waitlist, then shift the remaining positions.
-- **How are duplicate emails handled?** A `UNIQUE` constraint on `students.email`, with errno 1062 mapped to HTTP 409.
-
----
-
 ## 📜 Scripts
 
 | Command | Location | Purpose |
