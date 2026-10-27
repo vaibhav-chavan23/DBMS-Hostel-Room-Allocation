@@ -1,4 +1,23 @@
+CREATE DATABASE IF NOT EXISTS hostel_db
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
 
+USE hostel_db;
+
+-- 1. Students Table
+
+CREATE TABLE IF NOT EXISTS students (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  passwordHash VARCHAR(255) NOT NULL,
+  cgpa DECIMAL(4, 2) NOT NULL,
+  branch VARCHAR(50) NOT NULL,
+  role VARCHAR(10) NOT NULL DEFAULT 'student',
+  createdAt DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
+);
+
+-- 2. Groups Table
 
 CREATE TABLE IF NOT EXISTS `groups` (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -9,6 +28,8 @@ CREATE TABLE IF NOT EXISTS `groups` (
   FOREIGN KEY (leaderId) REFERENCES students (id)
 );
 
+-- 3. Group Members Junction Table
+
 CREATE TABLE IF NOT EXISTS group_members (
   studentId INT PRIMARY KEY,
   groupId INT NOT NULL,
@@ -16,6 +37,87 @@ CREATE TABLE IF NOT EXISTS group_members (
   FOREIGN KEY (studentId) REFERENCES students (id) ON DELETE CASCADE,
   FOREIGN KEY (groupId) REFERENCES `groups` (id) ON DELETE CASCADE
 );
+
+-- 4. Hostels Table
+
+CREATE TABLE IF NOT EXISTS hostels (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- 5. Rooms Table
+
+CREATE TABLE IF NOT EXISTS rooms (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  hostelId INT NOT NULL,
+  roomNumber VARCHAR(10) NOT NULL,
+  capacity INT NOT NULL DEFAULT 4,
+  status VARCHAR(20) NOT NULL DEFAULT 'available',
+  UNIQUE (hostelId, roomNumber),
+  INDEX (status),
+  FOREIGN KEY (hostelId) REFERENCES hostels (id) ON DELETE CASCADE
+);
+
+-- 6. Room Preferences Table
+
+CREATE TABLE IF NOT EXISTS room_preferences (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  groupId INT NOT NULL,
+  roomId INT NOT NULL,
+  preferenceOrder INT NOT NULL,
+  UNIQUE (groupId, preferenceOrder),
+  UNIQUE (groupId, roomId),
+  FOREIGN KEY (groupId) REFERENCES `groups` (id) ON DELETE CASCADE,
+  FOREIGN KEY (roomId) REFERENCES rooms (id) ON DELETE CASCADE
+);
+
+-- 7. Allocations Table
+
+CREATE TABLE IF NOT EXISTS allocations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  groupId INT NOT NULL UNIQUE,
+  roomId INT NOT NULL UNIQUE,
+  allocatedAt DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  allocatedBy VARCHAR(20) NOT NULL DEFAULT 'system',
+  FOREIGN KEY (groupId) REFERENCES `groups` (id) ON DELETE CASCADE,
+  FOREIGN KEY (roomId) REFERENCES rooms (id) ON DELETE CASCADE
+);
+
+-- 8. Waiting List Table
+
+CREATE TABLE IF NOT EXISTS waiting_list (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  groupId INT NOT NULL UNIQUE,
+  position INT NOT NULL UNIQUE,
+  addedAt DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  FOREIGN KEY (groupId) REFERENCES `groups` (id) ON DELETE CASCADE
+);
+
+-- 9. Vacate Requests Table
+
+CREATE TABLE IF NOT EXISTS vacate_requests (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  groupId INT NOT NULL,
+  requestedBy INT NOT NULL,
+  reason TEXT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  requestedAt DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  resolvedAt DATETIME(3) NULL,
+  INDEX (status),
+  FOREIGN KEY (groupId) REFERENCES `groups` (id) ON DELETE CASCADE,
+  FOREIGN KEY (requestedBy) REFERENCES students (id) ON DELETE CASCADE
+);
+
+-- 10. Activity Log Table
+
+CREATE TABLE IF NOT EXISTS activity_log (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  eventType VARCHAR(50) NOT NULL,
+  description TEXT NOT NULL,
+  createdAt DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
+);
+
+-- 11. Join Requests Table
 
 CREATE TABLE IF NOT EXISTS join_requests (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -27,6 +129,8 @@ CREATE TABLE IF NOT EXISTS join_requests (
   FOREIGN KEY (groupId) REFERENCES `groups` (id) ON DELETE CASCADE,
   FOREIGN KEY (studentId) REFERENCES students (id) ON DELETE CASCADE
 );
+
+-- 12. Group Invitations Table
 
 CREATE TABLE IF NOT EXISTS group_invitations (
   id INT AUTO_INCREMENT PRIMARY KEY,

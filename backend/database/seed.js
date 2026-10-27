@@ -26,9 +26,9 @@ async function seed() {
 
     // 2. Seed Hostels and Rooms
     const hostelsToSeed = [
-      { name: 'Boys Hostel A', gender: 'male' },
-      { name: 'Boys Hostel B', gender: 'male' },
-      { name: 'Boys Hostel C', gender: 'male' }
+      { name: 'Hostel A' },
+      { name: 'Hostel B' },
+      { name: 'Hostel C' }
     ];
 
     for (const h of hostelsToSeed) {
@@ -40,8 +40,8 @@ async function seed() {
       let hostelId;
       if (hostelRows.length === 0) {
         const [result] = await pool.execute(
-          'INSERT INTO hostels (name, gender) VALUES (?, ?)',
-          [h.name, h.gender]
+          'INSERT INTO hostels (name) VALUES (?)',
+          [h.name]
         );
         hostelId = result.insertId;
         console.log(`Created hostel: ${h.name} (ID: ${hostelId})`);
